@@ -155,9 +155,13 @@ func main() {
 				http.Redirect(w, r, "https://veedelvelo.de", http.StatusTemporaryRedirect)
 			}))
 		}()
+
+		if err := http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", handler); err != nil {
+			log.Fatalf("error starting web server: %w", err)
+		}
 	}
 
-	if err := http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", handler); err != nil {
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatalf("error starting web server: %w", err)
 	}
 }
