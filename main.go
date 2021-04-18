@@ -83,7 +83,7 @@ func (s *Server) handleTemplate(path, contentType string, data interface{}) http
 
 type Mode string
 
-//go:embed index.html style.css favicon.ico favicon.png
+//go:embed index.html style.css favicon.ico favicon.png impressum.html
 var embedded embed.FS
 
 const (
