@@ -29,9 +29,15 @@ func (s *Server) setCache(w http.ResponseWriter) {
 	}
 }
 
+func (s *Server) setHeader(w http.ResponseWriter, contentType string) {
+	w.Header().Set("Content-type", contentType)
+	w.Header().Set("Content-language", "de-DE")
+	w.Header().Set("X-Robots-Tag", "noindex")
+}
+
 func (s *Server) handleFile(path, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", contentType)
+		s.setHeader(w, contentType)
 		s.setCache(w)
 
 		f, err := s.Open(path)
@@ -45,8 +51,7 @@ func (s *Server) handleFile(path, contentType string) http.HandlerFunc {
 
 func (s *Server) handleTemplate(path, contentType string, data interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", contentType)
-		w.Header().Set("Content-language", "de-DE")
+		s.setHeader(w, contentType)
 		s.setCache(w)
 
 		index, err := s.ReadFile(path)
