@@ -1,0 +1,52 @@
+body {
+    margin: 0 auto;
+    max-width: 50em;
+    font-family: "Helvetica", "Arial", sans-serif;
+    line-height: 1.5;
+    padding: 4em 1em;
+    margin-top: 1em;
+    padding-top: 1em;
+}
+
+h1,
+h2,
+strong {
+    color: #333;
+}
+
+.calendar {
+    max-width: 25em;
+    margin-bottom: 2.4rem;
+}
+
+.event {
+    background-color: #81d4fa;
+}
+.starting {
+    border-bottom-left-radius: 10px;
+    border-top-left-radius: 10px;
+}
+.ending {
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+
+.day:not(.headline) {
+    padding-left: 1.2rem;
+}
+
+.month {
+    display: grid;
+    grid-template-columns: 20% 20% 20% 20% 20% 20% 20%;
+}
+
+.headline {
+    font-size: 10px;
+    color: #36352e;
+}
+
+.disclaimer {
+    color: #36352e;
+    font-size: 10px;
+}

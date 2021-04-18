@@ -1,0 +1,59 @@
+<html>
+  <header>
+    <title>Veedel Velo</title>
+    <link rel="stylesheet" href="style.css" />
+  </header>
+  <body>
+
+    <div class="header">
+      <img src="favicon.png" alt="cargo bike" />
+    </div>
+
+    <div class="content">
+      <h1>Mobilität für alle: ein Anfang im Veedel</h1>
+
+      <p>
+        Wie schön wäre Köln, wenn mehr Menschen den Wocheneinkauf, die
+        Materialien aus dem Baumarkt oder die Kinder mit dem Lastenrad von A
+        nach B bringen würden? Wir wollen mit einem <a href="https://muli-cycles.de/en/shop/bikes/e-muli-steps" rel="noopener">Muli</a>
+        und damit einer städischen Alleskönnerin, zeigen wie
+        toll Lastenräder sind. Denn wir sind nicht nur selber schwer begeistert von
+        diesem Fortbewegungsmittel, wir glauben auch das es mehr Menschen wären – wenn
+        sie es nur kennenlernen.
+      </p>
+
+      <p>
+        Warum also nicht einen Muli holen und ihm dem Veedel vorstellen. In der
+        Nachbarschaft bekanntmachen und Online das ausleihen ermöglichen. Und dabei
+        dann vielleicht nicht nur die Leidenschaft für das Radfahren teilen.
+      </p>
+
+      <p>
+        Für uns StudentInnen ist dies nur möglich mit einer Unterstützung, wobei wir
+        damit auch einen Muli finanzieren wollen der vom Kindertransport bis zum
+        Wocheneinkauf alles abdeckt und nicht zuletzt noch platzsparend in der Stadt
+        aufbewahrt werden kann. Obendrein in der Muli noch Umweltfreundlich und in
+        Deutschland produziert.
+      </p>
+
+      <p>
+        Für alle VielfahrerInnen die sich auf zwei Rädern in Köln bewegen wird schnell
+        klar: es braucht eine Veränderung im Straßenverkehr. Wir wollen mit einem
+        Lastenrad Transportwege, vom Garten,Baumarkt oder Großeinkauf für Menschen in
+        unserem Veedel möglich machen und dabei
+      </p>
+    </div>
+    <div class="calendar">
+      <h2>Belegungs-Kalender</h2>
+      {{ range .Month }}
+      <h5>
+        {{ .Name }}
+      </h5>
+      <div class="month">{{ range .Days }}<div class="day  {{ .Classes | join }}">{{ .Content }}</div>{{ end }}</div>
+      {{ end }}
+    </div>
+    <div class="disclaimer">
+      Diese Seite nutzt keine Cookies und zeichnet keine Logfiles auf.
+    </div>
+  </body>
+</html>
