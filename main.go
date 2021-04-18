@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"embed"
 	"flag"
 	"fmt"
@@ -45,7 +46,16 @@ func (s *Server) handleFile(path, contentType string) http.HandlerFunc {
 			http.Error(w, "nope", http.StatusNotFound)
 		}
 		defer f.Close()
-		io.Copy(w, f)
+
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			io.Copy(w, f)
+			return
+		}
+
+		w.Header().Set("Content-Encoding", "gzip")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		io.Copy(gz, f)
 	}
 }
 
