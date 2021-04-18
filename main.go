@@ -109,10 +109,12 @@ func supportedModeP(in Mode) bool {
 func main() {
 	var mode, port string
 	var refereshCert bool
+	var version string
 
 	flag.StringVar(&mode, "mode", "prod", "operating mode (prod, dev)")
 	flag.StringVar(&port, "port", "8080", "port number")
 	flag.BoolVar(&refereshCert, "refresh-cert", false, "refresh cert")
+	flag.StringVar(&version, "version", "1", "asset version")
 	flag.Parse()
 
 	if !supportedModeP(Mode(mode)) {
@@ -140,14 +142,21 @@ func main() {
 		},
 	}
 
-	data := calendar(bookings, time.March, time.April, time.May)
 	server := NewServer(Mode(mode))
 
+	data := struct {
+		Month   []Month
+		Version string
+	}{
+		Month:   calendar(bookings, time.March, time.April, time.May),
+		Version: version,
+	}
+
 	handler := http.NewServeMux()
-	handler.HandleFunc("/", server.handleTemplate("index.html", "text/html; charset=UTF-8", struct{ Month []Month }{Month: data}))
+	handler.HandleFunc("/", server.handleTemplate("index.html", "text/html; charset=UTF-8", data))
 	handler.HandleFunc("/favicon.ico", server.handleFile("favicon.ico", "image/x-icon"))
-	handler.HandleFunc("/style.css", server.handleFile("style.css", "text/css"))
-	handler.HandleFunc("/favicon.png", server.handleFile("favicon.png", "image/png"))
+	handler.HandleFunc(fmt.Sprintf("/style-%s.css", version), server.handleFile("style.css", "text/css"))
+	handler.HandleFunc(fmt.Sprintf("/favicon-%s.png", version), server.handleFile("favicon.png", "image/png"))
 
 	if Mode(mode) == Prod {
 		go func() {
