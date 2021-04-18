@@ -72,3 +72,7 @@ strong {
     color: #36352e;
     font-size: 10px;
 }
+
+.address > p {
+    margin: 0px;
+}

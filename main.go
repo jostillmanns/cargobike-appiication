@@ -49,7 +49,7 @@ func (s *Server) handleTemplate(path, contentType string, data interface{}) http
 		w.Header().Set("Content-language", "de-DE")
 		s.setCache(w)
 
-		index, err := s.ReadFile("index.html")
+		index, err := s.ReadFile(path)
 		if err != nil {
 			http.Error(w, "nope", http.StatusNotFound)
 		}
@@ -154,6 +154,7 @@ func main() {
 
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", server.handleTemplate("index.html", "text/html; charset=UTF-8", data))
+	handler.HandleFunc("/impressum", server.handleTemplate("impressum.html", "text/html; charset=UTF-8", data))
 	handler.HandleFunc("/favicon.ico", server.handleFile("favicon.ico", "image/x-icon"))
 	handler.HandleFunc(fmt.Sprintf("/style-%s.css", version), server.handleFile("style.css", "text/css"))
 	handler.HandleFunc(fmt.Sprintf("/favicon-%s.png", version), server.handleFile("favicon.png", "image/png"))
