@@ -107,13 +107,22 @@ func supportedModeP(in Mode) bool {
 }
 
 func main() {
-	var mode string
+	var mode, port string
+	var refereshCert bool
 
 	flag.StringVar(&mode, "mode", "prod", "operating mode (prod, dev)")
+	flag.StringVar(&port, "port", "8080", "port number")
+	flag.BoolVar(&refereshCert, "refresh-cert", false, "refresh cert")
 	flag.Parse()
 
 	if !supportedModeP(Mode(mode)) {
 		log.Fatalf("mode not supported: %s", mode)
+	}
+
+	if refereshCert {
+		if err := generateCert(); err != nil {
+			log.Fatalf("error grabbing certificate: %w", err)
+		}
 	}
 
 	bookings := []Booking{
@@ -140,7 +149,15 @@ func main() {
 	handler.HandleFunc("/style.css", server.handleFile("style.css", "text/css"))
 	handler.HandleFunc("/favicon.png", server.handleFile("favicon.png", "image/png"))
 
-	if err := http.ListenAndServe(":8080", handler); err != nil {
+	if Mode(mode) == Prod {
+		go func() {
+			http.ListenAndServe(":80", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Redirect(w, r, "https://veedelvelo.de", http.StatusTemporaryRedirect)
+			}))
+		}()
+	}
+
+	if err := http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", handler); err != nil {
 		log.Fatalf("error starting web server: %w", err)
 	}
 }
