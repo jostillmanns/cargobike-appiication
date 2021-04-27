@@ -13,6 +13,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/wcharczuk/go-chart/v2"
 )
 
 type Server struct {
@@ -68,6 +70,7 @@ func (s *Server) handleTemplate(path, contentType string, data interface{}) http
 		if err != nil {
 			http.Error(w, "nope", http.StatusNotFound)
 		}
+
 		fm := template.FuncMap{
 			"join": func(in []string) template.HTML { return template.HTML(strings.Join(in, " ")) },
 		}
@@ -81,9 +84,21 @@ func (s *Server) handleTemplate(path, contentType string, data interface{}) http
 	}
 }
 
+func (s *Server) handleChart(plot chart.StackedBarChart) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s.setHeader(w, "image/png")
+		s.setCache(w)
+
+		if err := plot.Render(chart.PNG, w); err != nil {
+			http.Error(w, "nope", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 type Mode string
 
-//go:embed index.html style.css favicon.ico favicon.png impressum.html
+//go:embed index.html style.css favicon.ico favicon.png impressum.html car_replacement_statistics.webp usp.html
 var embedded embed.FS
 
 const (
@@ -159,18 +174,28 @@ func main() {
 
 	server := NewServer(Mode(mode))
 
+	usp, err := server.ReadFile("usp.html")
+	if err != nil {
+		log.Fatalf("unable to read usp.html: %w", err)
+	}
+
 	data := struct {
 		Month   []Month
 		Version string
+		USP     template.HTML
 	}{
 		Month:   calendar(bookings, time.March, time.April, time.May),
 		Version: version,
+		USP:     template.HTML(string(usp)),
 	}
 
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", server.handleTemplate("index.html", "text/html; charset=UTF-8", data))
 	handler.HandleFunc("/impressum", server.handleTemplate("impressum.html", "text/html; charset=UTF-8", data))
 	handler.HandleFunc("/favicon.ico", server.handleFile("favicon.ico", "image/x-icon"))
+	handler.HandleFunc("/car_replacement_statistics.webp", server.handleFile("car_replacement_statistics.webp", "image/webp"))
+	handler.HandleFunc("/chart-a.png", server.handleChart(plotSurveyA()))
+	handler.HandleFunc("/chart-b.png", server.handleChart(plotSurveyB()))
 	handler.HandleFunc(fmt.Sprintf("/style-%s.css", version), server.handleFile("style.css", "text/css"))
 	handler.HandleFunc(fmt.Sprintf("/favicon-%s.png", version), server.handleFile("favicon.png", "image/png"))
 

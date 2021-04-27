@@ -34,7 +34,7 @@ strong {
     margin-top: 1.2rem;
     background-color: #81d4fa;
     border-radius: 10px;
-    color: 36352e;
+    color: #36352e;
     font-size: 10px;
     padding: .4rem;
     display: inline-block;
@@ -68,11 +68,64 @@ strong {
     color: #36352e;
 }
 
+.icon {
+    font-size: 30px;
+}
+
 .disclaimer {
+    padding: 1.2rem;
+    background-color: #81d4fa;
+}
+
+.footer {
     color: #36352e;
     font-size: 10px;
 }
 
 .address > p {
     margin: 0px;
+}
+
+.car-replacement-statistics {
+    width: 100%;
+    margin-left: -20px;
+}
+
+.citation-label {
+    color: #36352e;
+    font-size: 10px;
+}
+
+.mariner {
+    background-color: #3c6494;
+}
+
+.light-steel-blue {
+    background-color: #b6c3dc;
+}
+
+.polo-blue {
+    background-color: #7e9bc8;
+}
+
+.steel-blue {
+    background-color: #4978b1;
+}
+
+.last-blue {
+    background-color: #798cb1;
+}
+
+.chart-legend {
+    display: grid;
+    grid-row-gap: .4rem;
+    grid-template-columns: 10px 150px 10px 150px;
+    font-size: 10px;
+}
+
+.color-description {
+    margin-left: .8rem;
+}
+
+.placeholder {
 }

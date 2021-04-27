@@ -9,38 +9,49 @@
       <img src="favicon-{{ .Version }}.png" alt="cargo bike" />
     </div>
 
+    <div class="disclaimer">
+      <div class="icon">💡</div>
+      <div>
+        Liebe Stadt Köln,
+        <br />
+        hier entsteht eine Seite zur gemeinsamen Nutzung eines Lastenrades in
+        Köln. Das Nutzungskonzept sieht vor das Rad im Veedel zu teilen. Hierzu
+        wird sich über den unten beispielsweise angegebenen Belegungskalender
+        das Rad für eine Zeit reservieren lassen.
+      </div>
+    </div>
+
     <div class="content">
       <h1>Mobilität für alle: ein Anfang im Veedel</h1>
 
       <p>
         Wie schön wäre Köln, wenn mehr Menschen den Wocheneinkauf, die
-        Materialien aus dem Baumarkt oder die Kinder mit dem Lastenrad von A
-        nach B bringen würden? Wir wollen mit einem <a href="https://muli-cycles.de/en/shop/bikes/e-muli-steps" rel="noopener">Muli</a>
-        und damit einer städischen Alleskönnerin, zeigen wie
-        toll Lastenräder sind. Denn wir sind nicht nur selber schwer begeistert von
-        diesem Fortbewegungsmittel, wir glauben auch das es mehr Menschen wären – wenn
-        sie es nur kennenlernen.
+        Materialien aus dem Baumarkt oder den täglichen Weg zu Arbeit mit einem
+        Lastenrad bestreiten würden? Wir wollen mit
+        einem <a href="https://www.larryvsharry.com/ebullitt"
+                 rel="noopener">Bullitt</a> und damit einer städischen Alleskönnerin,
+        zeigen wie toll Lastenräder sind. Denn wir sind nicht nur selber schwer
+        begeistert von diesem Fortbewegungsmittel, wir glauben auch das es mehr
+        Menschen wären – wenn sie es nur kennenlernen.
       </p>
 
       <p>
-        Warum also nicht einen Muli holen und ihm dem Veedel vorstellen. In der
+        Warum also nicht einen Bullitt holen und ihm dem Veedel vorstellen. In der
         Nachbarschaft bekanntmachen und Online das ausleihen ermöglichen. Und dabei
         dann vielleicht nicht nur die Leidenschaft für das Radfahren teilen.
       </p>
 
       <p>
-        Für uns StudentInnen ist dies nur möglich mit einer Unterstützung, wobei wir
-        damit auch einen Muli finanzieren wollen der vom Kindertransport bis zum
-        Wocheneinkauf alles abdeckt und nicht zuletzt noch platzsparend in der Stadt
-        aufbewahrt werden kann. Obendrein in der Muli noch Umweltfreundlich und in
-        Deutschland produziert.
+        Für uns StudentInnen ist dies nur möglich mit einer Unterstützung, wobei
+        wir damit auch ein Bullitt finanzieren wollen der vom täglichen Weg zur
+        Arbeit bis zum Wocheneinkauf alles abdeckt.
       </p>
 
       <p>
         Für alle VielfahrerInnen die sich auf zwei Rädern in Köln bewegen wird schnell
         klar: es braucht eine Veränderung im Straßenverkehr. Wir wollen mit einem
-        Lastenrad Transportwege, vom Garten,Baumarkt oder Großeinkauf für Menschen in
-        unserem Veedel möglich machen und dabei
+        Lastenrad Transportwege, vom Garten, Baumarkt oder Großeinkauf für Menschen in
+        unserem Veedel möglich machen.
       </p>
     </div>
     <div class="calendar">
@@ -53,7 +64,8 @@
       {{ end }}
       <div class="legend">Belegte Tage</div>
     </div>
-    <div class="disclaimer">
+    {{ .USP }}
+    <div class="footer">
       Diese Seite nutzt keine Cookies und zeichnet keine Logfiles auf. <a href="/impressum">Impressum</a>
     </div>
   </body>
