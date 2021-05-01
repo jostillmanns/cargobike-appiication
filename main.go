@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"compress/gzip"
 	"embed"
 	"flag"
@@ -21,6 +22,7 @@ type Server struct {
 	Mode     Mode
 	ReadFile func(path string) ([]byte, error)
 	Open     func(path string) (fs.File, error)
+	Version  string
 }
 
 func (s *Server) setCache(w http.ResponseWriter) {
@@ -61,7 +63,7 @@ func (s *Server) handleFile(path, contentType string) http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleTemplate(path, contentType string, data interface{}) http.HandlerFunc {
+func (s *Server) handleTemplate(path, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.setHeader(w, contentType)
 		s.setCache(w)
@@ -69,6 +71,7 @@ func (s *Server) handleTemplate(path, contentType string, data interface{}) http
 		index, err := s.ReadFile(path)
 		if err != nil {
 			http.Error(w, "nope", http.StatusNotFound)
+			return
 		}
 
 		fm := template.FuncMap{
@@ -77,11 +80,70 @@ func (s *Server) handleTemplate(path, contentType string, data interface{}) http
 		templ, err := template.New("").Funcs(fm).Parse(string(index))
 		if err != nil {
 			http.Error(w, "nope", http.StatusNotFound)
+			return
 		}
+
+		data, err := s.templateData()
+		if err != nil {
+			http.Error(w, "nope", http.StatusNotFound)
+			return
+		}
+
 		if err := templ.Execute(w, data); err != nil {
 			http.Error(w, "nope", http.StatusNotFound)
 		}
 	}
+}
+
+func (s *Server) templateData() (interface{}, error) {
+	bookings := []Booking{
+		{
+			From: time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
+			To:   time.Date(2021, time.April, 3, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			From: time.Date(2021, time.March, 15, 0, 0, 0, 0, time.UTC),
+			To:   time.Date(2021, time.March, 17, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			From: time.Date(2021, time.May, 8, 0, 0, 0, 0, time.UTC),
+			To:   time.Date(2021, time.May, 12, 0, 0, 0, 0, time.UTC),
+		},
+	}
+
+	usp, err := s.ReadFile("usp.html")
+	if err != nil {
+		return nil, fmt.Errorf("unable to read usp.html: %w", err)
+	}
+
+	statistics, err := s.ReadFile("statistics.html")
+	if err != nil {
+		return nil, fmt.Errorf("unable to read fakten.html: %w", err)
+	}
+
+	templ, err := template.New("").Parse(string(statistics))
+	if err != nil {
+		return nil, fmt.Errorf("error parsing statistics template: %w", err)
+	}
+
+	buf := &bytes.Buffer{}
+	if err := templ.Execute(buf, struct{ Version string }{Version: s.Version}); err != nil {
+		return nil, fmt.Errorf("error executing statistics template: %w", err)
+	}
+
+	data := struct {
+		Month      []Month
+		Version    string
+		USP        template.HTML
+		Statistics template.HTML
+	}{
+		Month:      calendar(bookings, time.March, time.April, time.May),
+		Version:    s.Version,
+		USP:        template.HTML(string(usp)),
+		Statistics: template.HTML(buf.String()),
+	}
+
+	return data, nil
 }
 
 func (s *Server) handleChart(plot chart.StackedBarChart) http.HandlerFunc {
@@ -106,13 +168,14 @@ const (
 	Dev  Mode = "dev"
 )
 
-func NewServer(mode Mode) *Server {
+func NewServer(mode Mode, version string) *Server {
 	switch mode {
 	case Prod:
 		return &Server{
 			Mode:     mode,
 			ReadFile: embedded.ReadFile,
 			Open:     embedded.Open,
+			Version:  version,
 		}
 	case Dev:
 		return &Server{
@@ -121,6 +184,7 @@ func NewServer(mode Mode) *Server {
 			Open: func(path string) (fs.File, error) {
 				return os.Open(path)
 			},
+			Version: version,
 		}
 	default:
 		panic("operating mode not supported")
@@ -153,49 +217,19 @@ func main() {
 
 	if refereshCert {
 		if err := generateCert(); err != nil {
-			log.Fatalf("error grabbing certificate: %w", err)
+			log.Fatalf("error grabbing certificate: %v", err)
 		}
 	}
 
-	bookings := []Booking{
-		{
-			From: time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
-			To:   time.Date(2021, time.April, 3, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			From: time.Date(2021, time.March, 15, 0, 0, 0, 0, time.UTC),
-			To:   time.Date(2021, time.March, 17, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			From: time.Date(2021, time.May, 8, 0, 0, 0, 0, time.UTC),
-			To:   time.Date(2021, time.May, 12, 0, 0, 0, 0, time.UTC),
-		},
-	}
-
-	server := NewServer(Mode(mode))
-
-	usp, err := server.ReadFile("usp.html")
-	if err != nil {
-		log.Fatalf("unable to read usp.html: %w", err)
-	}
-
-	data := struct {
-		Month   []Month
-		Version string
-		USP     template.HTML
-	}{
-		Month:   calendar(bookings, time.March, time.April, time.May),
-		Version: version,
-		USP:     template.HTML(string(usp)),
-	}
+	server := NewServer(Mode(mode), version)
 
 	handler := http.NewServeMux()
-	handler.HandleFunc("/", server.handleTemplate("index.html", "text/html; charset=UTF-8", data))
-	handler.HandleFunc("/impressum", server.handleTemplate("impressum.html", "text/html; charset=UTF-8", data))
+	handler.HandleFunc("/", server.handleTemplate("index.html", "text/html; charset=UTF-8"))
+	handler.HandleFunc("/impressum", server.handleTemplate("impressum.html", "text/html; charset=UTF-8"))
 	handler.HandleFunc("/favicon.ico", server.handleFile("favicon.ico", "image/x-icon"))
 	handler.HandleFunc("/car_replacement_statistics.webp", server.handleFile("car_replacement_statistics.webp", "image/webp"))
-	handler.HandleFunc("/chart-a.png", server.handleChart(plotSurveyA()))
-	handler.HandleFunc("/chart-b.png", server.handleChart(plotSurveyB()))
+	handler.HandleFunc(fmt.Sprintf("/chart-a-%s.png", version), server.handleChart(plotSurveyA()))
+	handler.HandleFunc(fmt.Sprintf("/chart-b-%s.png", version), server.handleChart(plotSurveyB()))
 	handler.HandleFunc(fmt.Sprintf("/style-%s.css", version), server.handleFile("style.css", "text/css"))
 	handler.HandleFunc(fmt.Sprintf("/favicon-%s.png", version), server.handleFile("favicon.png", "image/png"))
 
@@ -207,11 +241,11 @@ func main() {
 		}()
 
 		if err := http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", handler); err != nil {
-			log.Fatalf("error starting web server: %w", err)
+			log.Fatalf("error starting web server: %v", err)
 		}
 	}
 
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
-		log.Fatalf("error starting web server: %w", err)
+		log.Fatalf("error starting web server: %v", err)
 	}
 }

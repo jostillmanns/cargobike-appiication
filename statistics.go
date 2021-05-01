@@ -13,7 +13,10 @@ var (
 	colorPoloBlue       = drawing.Color{R: 126, G: 155, B: 200, A: 255}
 	colorSteelBlue      = drawing.Color{R: 73, G: 120, B: 177, A: 255}
 	colorLast           = drawing.Color{R: 121, G: 140, B: 177, A: 255}
-	barWidth            = 120
+	barWidth            = 100
+	barSpacing          = 10
+	strokeWidth         = 0.1
+	fontSize            = float64(7)
 )
 
 func plotSurveyA() chart.StackedBarChart {
@@ -25,24 +28,29 @@ func plotSurveyA() chart.StackedBarChart {
 		TitleStyle: chart.Hidden(),
 		Background: chart.Style{
 			Padding: chart.Box{
-				Top: 100,
+				Top: 0,
 			},
 		},
-		Width:      800,
-		Height:     500,
-		XAxis:      chart.Shown(),
-		YAxis:      chart.Shown(),
-		BarSpacing: 50,
+		Width:  300,
+		Height: 500,
+		XAxis: chart.Style{
+			FontSize: fontSize,
+		},
+		YAxis: chart.Style{
+			FontSize: fontSize,
+		},
+		BarSpacing: barSpacing,
 		Bars: []chart.StackedBar{
 			{
-				Name:  "Würdest du in der Zukunft wieder ein Lastenrad nutzen?",
+				Name:  "Würden Sie in der Zukunft wieder ein Lastenrad nutzen?",
 				Width: barWidth,
 				Values: []chart.Value{
 					{
 						Label: "74.4% Ja",
 						Value: 74.4,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorMariner,
 							FontColor:   colorWhite,
 						},
@@ -51,7 +59,8 @@ func plotSurveyA() chart.StackedBarChart {
 						Label: "18.6%",
 						Value: 18.6,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorLightSteelBlue,
 							FontColor:   colorWhite,
 						},
@@ -60,7 +69,8 @@ func plotSurveyA() chart.StackedBarChart {
 						Label: "5.3%",
 						Value: 5.3,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorPoloBlue,
 							FontColor:   colorWhite,
 						},
@@ -72,10 +82,21 @@ func plotSurveyA() chart.StackedBarChart {
 				Width: barWidth,
 				Values: []chart.Value{
 					{
+						Label: "",
+						Value: 100 - 20.2 - 14.5 - 25.7 - 20.5 - 17.2,
+						Style: chart.Style{
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
+							FillColor:   colorTransparent,
+							FontColor:   colorTransparent,
+						},
+					},
+					{
 						Label: "20.2% Ja",
 						Value: 20.2,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorMariner,
 							FontColor:   colorWhite,
 						},
@@ -84,7 +105,8 @@ func plotSurveyA() chart.StackedBarChart {
 						Label: "14.5%",
 						Value: 14.5,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorLightSteelBlue,
 							FontColor:   colorWhite,
 						},
@@ -93,7 +115,8 @@ func plotSurveyA() chart.StackedBarChart {
 						Label: "25.7%",
 						Value: 25.7,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorPoloBlue,
 							FontColor:   colorWhite,
 						},
@@ -102,7 +125,8 @@ func plotSurveyA() chart.StackedBarChart {
 						Label: "20.5%",
 						Value: 20.5,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorSteelBlue,
 							FontColor:   colorWhite,
 						},
@@ -111,7 +135,8 @@ func plotSurveyA() chart.StackedBarChart {
 						Label: "17.2%",
 						Value: 17.2,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorLast,
 							FontColor:   colorWhite,
 						},
@@ -127,18 +152,22 @@ func plotSurveyB() chart.StackedBarChart {
 	chart.DefaultCanvasColor = chart.ColorTransparent
 
 	return chart.StackedBarChart{
-		Title:      "Ohne einen Lastenrad-Sharing-Service, wie hättest du den Transport bewältigt?",
-		TitleStyle: chart.Hidden(),
+		Title: "Wie hätten Sie ohne ein Lastenrad-Sharing-Service den Transport bewältigt?",
+		TitleStyle: chart.Style{
+			FontSize: fontSize,
+		},
 		Background: chart.Style{
 			Padding: chart.Box{
 				Top: 100,
 			},
 		},
-		Width:      800,
-		Height:     500,
-		XAxis:      chart.Shown(),
-		YAxis:      chart.Shown(),
-		BarSpacing: 50,
+		Width:  600,
+		Height: 500,
+		XAxis: chart.Style{
+			FontSize: fontSize,
+		},
+		YAxis:      chart.Hidden(),
+		BarSpacing: barSpacing,
 		Bars: []chart.StackedBar{
 			{
 				Name:  "Zu Fuss",
@@ -146,21 +175,23 @@ func plotSurveyB() chart.StackedBarChart {
 				Values: []chart.Value{
 					{
 						Label: "",
-						Value: 96.7,
+						Value: 100 - 3.3,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: 0,
 							FillColor:   colorTransparent,
-							FontColor:   colorWhite,
+							FontColor:   colorTransparent,
+							StrokeColor: colorTransparent,
 						},
 					},
 					{
 						Label: "3.3%",
 						Value: 3.3,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorMariner,
 							FontColor:   colorWhite,
-							FontSize:    8,
 						},
 					},
 				},
@@ -171,21 +202,23 @@ func plotSurveyB() chart.StackedBarChart {
 				Values: []chart.Value{
 					{
 						Label: "%",
-						Value: 90.4,
+						Value: 100 - 9.6,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: 0,
 							FillColor:   colorTransparent,
-							FontColor:   colorWhite,
+							StrokeColor: colorTransparent,
+							FontColor:   colorTransparent,
 						},
 					},
 					{
 						Label: "9.6%",
 						Value: 9.6,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorMariner,
 							FontColor:   colorWhite,
-							FontSize:    8,
 						},
 					},
 				},
@@ -196,22 +229,23 @@ func plotSurveyB() chart.StackedBarChart {
 				Values: []chart.Value{
 					{
 						Label: "",
-						Value: 72.3,
+						Value: 100 - 27.7,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							FontSize:    fontSize,
+							StrokeWidth: 0,
 							FillColor:   colorTransparent,
-							FontColor:   colorWhite,
-							FontSize:    8,
+							StrokeColor: colorTransparent,
+							FontColor:   colorTransparent,
 						},
 					},
 					{
 						Label: "27.7%",
 						Value: 27.7,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorMariner,
 							FontColor:   colorWhite,
-							FontSize:    8,
+							FontSize:    fontSize,
 						},
 					},
 				},
@@ -224,30 +258,56 @@ func plotSurveyB() chart.StackedBarChart {
 						Label: "4.3% Geliehen",
 						Value: 4.3,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							StrokeWidth: strokeWidth,
 							FillColor:   colorMariner,
 							FontColor:   colorWhite,
-							FontSize:    8,
+							FontSize:    fontSize,
 						},
 					},
 					{
 						Label: "25% Carsharing",
 						Value: 25,
 						Style: chart.Style{
-							StrokeWidth: .01,
-							FillColor:   colorMariner,
+							StrokeWidth: strokeWidth,
+							FillColor:   colorLightSteelBlue,
 							FontColor:   colorWhite,
-							FontSize:    8,
+							FontSize:    fontSize,
 						},
 					},
 					{
 						Label: "16.1% Eigenes Auto",
 						Value: 16.1,
 						Style: chart.Style{
-							StrokeWidth: .01,
+							StrokeWidth: strokeWidth,
+							FillColor:   colorPoloBlue,
+							FontColor:   colorWhite,
+							FontSize:    fontSize,
+						},
+					},
+				},
+			},
+			{
+				Name:  "Ich hätte den Transport nicht gemacht.",
+				Width: barWidth,
+				Values: []chart.Value{
+					{
+						Label: "",
+						Value: 100 - 12.8,
+						Style: chart.Style{
+							FillColor:   colorTransparent,
+							StrokeColor: colorTransparent,
+							FontColor:   colorTransparent,
+							FontSize:    fontSize,
+						},
+					},
+					{
+						Label: "12.8%",
+						Value: 12.8,
+						Style: chart.Style{
+							StrokeWidth: strokeWidth,
 							FillColor:   colorMariner,
 							FontColor:   colorWhite,
-							FontSize:    8,
+							FontSize:    fontSize,
 						},
 					},
 				},

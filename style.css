@@ -116,6 +116,11 @@ strong {
     background-color: #798cb1;
 }
 
+.charts {
+    display: flex;
+    flex-direction: row;
+}
+
 .chart-legend {
     display: grid;
     grid-row-gap: .4rem;
