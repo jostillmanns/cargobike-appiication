@@ -19,19 +19,26 @@ import (
 )
 
 type Server struct {
-	Mode     Mode
 	ReadFile func(path string) ([]byte, error)
 	Open     func(path string) (fs.File, error)
 	Version  string
+	Cache    CacheStrategy
 }
 
+type CacheStrategy string
+
+var (
+	NoStore CacheStrategy = "no-store"
+	Cache   CacheStrategy = CacheStrategy(fmt.Sprintf("max-age=%d", (time.Hour*24*7)/time.Second))
+)
+
 func (s *Server) setCache(w http.ResponseWriter) {
-	switch s.Mode {
-	case Dev:
-		w.Header().Set("Cache-Control", "no-store")
-	case Prod:
-		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", (time.Hour*24*7)/time.Second))
-	}
+	w.Header().Set("Cache-Control", string(s.Cache))
+}
+
+func (s *Server) error(w http.ResponseWriter, err error) {
+	log.Print(err)
+	http.Error(w, "nope", http.StatusNotFound)
 }
 
 func (s *Server) setHeader(w http.ResponseWriter, contentType string) {
@@ -47,7 +54,8 @@ func (s *Server) handleFile(path, contentType string) http.HandlerFunc {
 
 		f, err := s.Open(path)
 		if err != nil {
-			http.Error(w, "nope", http.StatusNotFound)
+			s.error(w, err)
+			return
 		}
 		defer f.Close()
 
@@ -70,7 +78,7 @@ func (s *Server) handleTemplate(path, contentType string) http.HandlerFunc {
 
 		index, err := s.ReadFile(path)
 		if err != nil {
-			http.Error(w, "nope", http.StatusNotFound)
+			s.error(w, err)
 			return
 		}
 
@@ -79,18 +87,19 @@ func (s *Server) handleTemplate(path, contentType string) http.HandlerFunc {
 		}
 		templ, err := template.New("").Funcs(fm).Parse(string(index))
 		if err != nil {
-			http.Error(w, "nope", http.StatusNotFound)
+			s.error(w, err)
 			return
 		}
 
 		data, err := s.templateData()
 		if err != nil {
-			http.Error(w, "nope", http.StatusNotFound)
+			s.error(w, err)
 			return
 		}
 
 		if err := templ.Execute(w, data); err != nil {
-			http.Error(w, "nope", http.StatusNotFound)
+			s.error(w, err)
+			return
 		}
 	}
 }
@@ -118,7 +127,7 @@ func (s *Server) templateData() (interface{}, error) {
 
 	statistics, err := s.ReadFile("statistics.html")
 	if err != nil {
-		return nil, fmt.Errorf("unable to read fakten.html: %w", err)
+		return nil, fmt.Errorf("unable to read statistics.html: %w", err)
 	}
 
 	templ, err := template.New("").Parse(string(statistics))
@@ -152,76 +161,68 @@ func (s *Server) handleChart(plot chart.StackedBarChart) http.HandlerFunc {
 		s.setCache(w)
 
 		if err := plot.Render(chart.PNG, w); err != nil {
-			http.Error(w, "nope", http.StatusInternalServerError)
+			s.error(w, err)
 			return
 		}
 	}
 }
 
-type Mode string
+type FileHandler string
 
-//go:embed index.html style.css favicon.ico favicon.png impressum.html car_replacement_statistics.webp usp.html
+//go:embed index.html style.css favicon.ico favicon.png impressum.html car_replacement_statistics.webp usp.html statistics.html
 var embedded embed.FS
 
 const (
-	Prod Mode = "prod"
-	Dev  Mode = "dev"
+	Embedded FileHandler = "embedded"
+	Local    FileHandler = "local"
 )
 
-func NewServer(mode Mode, version string) *Server {
-	switch mode {
-	case Prod:
-		return &Server{
-			Mode:     mode,
-			ReadFile: embedded.ReadFile,
-			Open:     embedded.Open,
-			Version:  version,
-		}
-	case Dev:
-		return &Server{
-			Mode:     mode,
-			ReadFile: os.ReadFile,
-			Open: func(path string) (fs.File, error) {
-				return os.Open(path)
-			},
-			Version: version,
-		}
-	default:
-		panic("operating mode not supported")
-	}
-}
+func NewServer(version string, fileHandler FileHandler, cacheStrategy CacheStrategy) *Server {
+	var readFile func(path string) ([]byte, error)
+	var open func(path string) (fs.File, error)
 
-func supportedModeP(in Mode) bool {
-	for _, m := range []Mode{Dev, Prod} {
-		if m == in {
-			return true
+	switch fileHandler {
+	case Embedded:
+		readFile = embedded.ReadFile
+		open = embedded.Open
+
+	case Local:
+		readFile = os.ReadFile
+		open = func(path string) (fs.File, error) {
+			return os.Open(path)
 		}
 	}
-	return false
+
+	return &Server{
+		ReadFile: readFile,
+		Open:     open,
+		Version:  version,
+	}
 }
 
 func main() {
-	var mode, port string
-	var refereshCert bool
 	var version string
+	var port string
+	var embedded bool
+	var cache bool
 
-	flag.StringVar(&mode, "mode", "prod", "operating mode (prod, dev)")
 	flag.StringVar(&port, "port", "8080", "port number")
-	flag.BoolVar(&refereshCert, "refresh-cert", false, "refresh cert")
 	flag.StringVar(&version, "version", "1", "asset version")
+	flag.BoolVar(&embedded, "embedded", true, "use embedded assets")
+	flag.BoolVar(&cache, "cache", true, "cache assets")
 	flag.Parse()
 
-	if !supportedModeP(Mode(mode)) {
-		log.Fatalf("mode not supported: %s", mode)
+	fileHandler := Embedded
+	if !embedded {
+		fileHandler = Local
 	}
 
-	if refereshCert {
-		if err := generateCert(); err != nil {
-			log.Fatalf("error grabbing certificate: %v", err)
-		}
+	cacheStrategy := Cache
+	if !cache {
+		cacheStrategy = NoStore
 	}
 
-	server := NewServer(Mode(mode), version)
+	server := NewServer(version, fileHandler, cacheStrategy)
 
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", server.handleTemplate("index.html", "text/html; charset=UTF-8"))
@@ -232,18 +233,6 @@ func main() {
 	handler.HandleFunc(fmt.Sprintf("/chart-b-%s.png", version), server.handleChart(plotSurveyB()))
 	handler.HandleFunc(fmt.Sprintf("/style-%s.css", version), server.handleFile("style.css", "text/css"))
 	handler.HandleFunc(fmt.Sprintf("/favicon-%s.png", version), server.handleFile("favicon.png", "image/png"))
-
-	if Mode(mode) == Prod {
-		go func() {
-			http.ListenAndServe(":80", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				http.Redirect(w, r, "https://veedelvelo.de", http.StatusTemporaryRedirect)
-			}))
-		}()
-
-		if err := http.ListenAndServeTLS(":"+port, "cert.pem", "key.pem", handler); err != nil {
-			log.Fatalf("error starting web server: %v", err)
-		}
-	}
 
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatalf("error starting web server: %v", err)

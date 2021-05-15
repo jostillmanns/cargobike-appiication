@@ -1,0 +1,9 @@
+- name: Auto / LKW
+  before: 59.8%
+  after: 19.1%
+- name: Bus / Bahn
+  before: 5.2%
+  after: 1.0%
+- name: Fahrrad
+  before: 29.4%
+  after: 10.8%

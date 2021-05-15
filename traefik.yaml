@@ -1,0 +1,25 @@
+ping: true
+
+entryPoints:
+  web:
+    address: ":80/tcp"
+  websecure:
+    address: ":443/tcp"
+
+  traefik:
+    address: ":9000/tcp"
+
+accessLog: {}
+
+providers:
+  file:
+    fileName: /etc/traefik/provider.yaml
+    watch: true
+
+certificatesResolvers:
+  le:
+    acme:
+      email: joschka@tillmanns.me
+      storage: acme.json
+      httpChallenge:
+        entryPoint: web

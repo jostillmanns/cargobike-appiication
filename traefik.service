@@ -1,0 +1,8 @@
+[Unit]
+Description=Traefik
+
+[Service]
+ExecStart=/usr/local/bin/traefik --configfile /etc/traefik.yaml
+
+[Install]
+WantedBy=multi-user.target
