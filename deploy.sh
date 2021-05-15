@@ -5,11 +5,11 @@ set -ex
 export TMP_DIR=$(ssh root@veedelvelo.de mktemp -d)
 export CGO_ENABLED=0
 
-go build
-scp cargobike root@veedelvelo.de:/usr/local/bin/cargobike
-
 ssh root@veedelvelo.de systemctl stop traefik || true
 ssh root@veedelvelo.de systemctl stop cargobike || tre
+
+go build
+scp cargobike root@veedelvelo.de:/usr/local/bin/cargobike
 
 ssh root@veedelvelo.de wget -q -O $TMP_DIR/traefik.tar.gz https://github.com/traefik/traefik/releases/download/v2.4.8/traefik_v2.4.8_linux_amd64.tar.gz
 ssh root@veedelvelo.de tar Cxvf $TMP_DIR $TMP_DIR/traefik.tar.gz
